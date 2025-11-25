@@ -1,0 +1,5 @@
+{
+  "name": "ProductVis - 产品可视化展厅",
+  "description": "即时将Excel/CSV表格数据转换为以视觉为核心的产品展示画廊。支持拖拽上传、自动识别图片列与详细信息展示。",
+  "requestFramePermissions": []
+}
