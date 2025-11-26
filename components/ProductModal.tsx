@@ -1,7 +1,7 @@
-import React, { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { ProductData } from '../types';
-import { findTitleKey, findImageKey, extractFirstImageUrl, findLocalImageMatch, parseCurrency, parseWeightToGrams, parseExcelAndFindRow } from '../utils/excelParser';
-import { X, Copy, Check, Image as ImageIcon, ExternalLink, FolderHeart, Box, Layers, FileText, Calculator, Upload, Bot, Sparkles, TrendingUp, Info } from 'lucide-react';
+import { findTitleKey, findImageKey, extractFirstImageUrl, findLocalImageMatch, parseCurrency, parseWeightToGrams } from '../utils/excelParser';
+import { X, Copy, Check, Image as ImageIcon, ExternalLink, FolderHeart, Box, Layers, FileText, Calculator, Bot, Sparkles, TrendingUp } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
 interface ProductModalProps {
@@ -34,10 +34,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
   const [taxRate, setTaxRate] = useState<number>(5); // J列: 税点 (%)
   const [platformRate, setPlatformRate] = useState<number>(5); // I列: 平台扣点 (%)
   
-  // External Data State
-  const [detectedFormulas, setDetectedFormulas] = useState<Record<string, string>>({});
-  const [importStatus, setImportStatus] = useState<string>("");
-
   // AI State
   const [aiAnalysis, setAiAnalysis] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -48,8 +44,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
         setImgError(false);
         setActiveTab('CORE');
         setAiAnalysis("");
-        setDetectedFormulas({});
-        setImportStatus("");
 
         // Auto-extract initial values from data
         const priceKey = headers.find(h => h.includes('价') || h.toLowerCase().includes('price') || h.includes('金额'));
@@ -139,7 +133,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
       // Q列: 减退款毛利率 = MarginPre * (1 - ReturnRate)
       const marginPostReturn = marginPreReturn * (1 - (returnRate / 100));
 
-      // R列: 除售后预计盈利投产 = 1 / MarginPostReturn
+      // R列: 除售后盈利投产 = 1 / MarginPostReturn
       const investmentEfficiency = marginPostReturn > 0 ? (1 / marginPostReturn) : 0;
 
       // Standard ROI for display (Profit / Cost)
@@ -160,48 +154,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
 
   const metrics = calculateMetrics();
 
-  // --- External File Import ---
-  const handleCalcSheetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!e.target.files || e.target.files.length === 0) return;
-      const file = e.target.files[0];
-      setImportStatus("正在分析表格...");
-      
-      try {
-          // Use current title/model to find row
-          const identifiers = [String(data[titleKey] || ''), String(data['型号'] || ''), String(data['sku'] || '')].filter(Boolean);
-          
-          const result = await parseExcelAndFindRow(file, identifiers);
-          
-          if (result.found && result.rowData) {
-              setImportStatus(`已在 Sheet "${result.sheetName}" 中找到匹配数据`);
-              
-              // Map extracted data to state
-              const row = result.rowData;
-              // Attempt to read specific columns if they exist, or fallback to heuristics
-              const newPrice = parseCurrency(row['售价'] || row['售卖价'] || row['Price'] || row['价格'] || calcPrice);
-              const newCost = parseCurrency(row['成本'] || row['商品成本'] || row['Cost'] || row['进价'] || calcCost);
-              const newWeight = parseWeightToGrams(row['重量'] || row['商品重量'] || row['Weight'] || calcWeight);
-              
-              // Try to find specific fees if they are in the sheet
-              if (row['纸箱成本']) setBoxCost(parseCurrency(row['纸箱成本']));
-              if (row['操作费']) setOpFee(parseCurrency(row['操作费']));
-              if (row['盈利'] || row['TargetProfit']) setOtherCost(parseCurrency(row['盈利'] || row['TargetProfit']));
-
-              setCalcPrice(newPrice);
-              setCalcCost(newCost);
-              setCalcWeight(newWeight);
-              if (result.formulas) {
-                  setDetectedFormulas(result.formulas);
-              }
-          } else {
-              setImportStatus("未找到匹配的产品数据 (请检查名称或SKU)");
-          }
-      } catch (err) {
-          console.error(err);
-          setImportStatus("解析失败");
-      }
-  };
-
   // --- AI Analysis ---
   const handleGenerateAnalysis = async () => {
     if (!process.env.API_KEY) {
@@ -217,7 +169,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
         
         // Use the specific prompt structure requested by the user
         const prompt = `
-        请分析这款产品（${displayTitle}）在当前SKU配置下的投资回报效率，重点关注'除售后预计盈利投产'指标。
+        请分析这款产品（${displayTitle}）在当前SKU配置下的投资回报效率，重点关注'除售后盈利投产'指标。
         
         【当前SKU数据】
         - 售价: ¥${calcPrice.toFixed(2)}
@@ -226,7 +178,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
         - 设定售后率: ${returnRate}%
         - 未减退款毛利率: ${(metrics.marginPreReturn * 100).toFixed(2)}%
         - 减退款毛利率: ${(metrics.marginPostReturn * 100).toFixed(2)}%
-        - **除售后预计盈利投产 (1/减退款毛利率)**: ${metrics.investmentEfficiency.toFixed(2)}
+        - **除售后盈利投产 (1/减退款毛利率)**: ${metrics.investmentEfficiency.toFixed(2)}
 
         请严格按照以下结构输出分析报告：
 
@@ -290,36 +242,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
   const renderCalculator = () => {
       return (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-8">
-            {/* 1. Import Section */}
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
-                <h3 className="text-blue-900 font-bold flex items-center gap-2 mb-4">
-                    <Upload className="w-5 h-5" /> 导入成本数据
-                </h3>
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
-                    <label className="cursor-pointer bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
-                        <FileText className="w-4 h-4" />
-                        选择 Excel 表格
-                        <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleCalcSheetUpload} />
-                    </label>
-                    <span className="text-sm text-slate-500">{importStatus || "支持自动读取对应型号的成本、售价和重量"}</span>
-                </div>
-                {Object.keys(detectedFormulas).length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-blue-100">
-                        <p className="text-xs font-bold text-blue-800 mb-2">检测到 Sheet 中的计算公式:</p>
-                        <div className="flex flex-wrap gap-2">
-                            {Object.entries(detectedFormulas).map(([k, v]) => {
-                                const valStr = String(v);
-                                return (
-                                <span key={k} className="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-mono" title={valStr}>
-                                    {k}: {valStr.length > 30 ? valStr.substring(0,30)+'...' : valStr}
-                                </span>
-                            )})}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* 2. Inputs & Logic Display */}
+            {/* Inputs & Logic Display */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -378,7 +301,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-400" title="K列/Target Profit">其他/盈利 (K)</label>
+                                <label className="text-xs font-bold text-slate-400" title="K列/Target Profit">盈利</label>
                                 <input type="number" value={otherCost} onChange={e => setOtherCost(Number(e.target.value))} className="w-full p-1.5 text-sm border border-slate-200 rounded font-mono text-slate-600" />
                             </div>
                          </div>
@@ -411,14 +334,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                     
                     <div className="grid grid-cols-2 gap-4">
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <div className="text-xs text-slate-500 mb-1 font-bold">单单利润 (N列)</div>
+                            <div className="text-xs text-slate-500 mb-1 font-bold">利润</div>
                             <div className={`text-2xl font-black ${metrics.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 ¥{metrics.profit.toFixed(2)}
                             </div>
                             <div className="text-[10px] text-slate-400 mt-1">售卖价 - 综合成本</div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <div className="text-xs text-slate-500 mb-1 font-bold">未减退款毛利率 (O列)</div>
+                            <div className="text-xs text-slate-500 mb-1 font-bold">未减退款毛利率</div>
                             <div className="text-2xl font-black text-blue-600">
                                 {(metrics.marginPreReturn * 100).toFixed(1)}%
                             </div>
@@ -429,13 +352,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                     <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl p-6 shadow-xl relative overflow-hidden">
                         <div className="relative z-10 grid grid-cols-2 gap-6">
                              <div>
-                                <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">减退款毛利率 (Q列)</div>
+                                <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">减退款毛利率</div>
                                 <div className="text-3xl font-black text-white">{(metrics.marginPostReturn * 100).toFixed(2)}%</div>
                                 <div className="text-[10px] text-slate-500 mt-1 opacity-70">O列 × (1 - 售后率)</div>
                              </div>
 
                              <div>
-                                <div className="text-xs text-amber-400 mb-1 uppercase tracking-wider font-bold">除售后预计盈利投产 (R列)</div>
+                                <div className="text-xs text-amber-400 mb-1 uppercase tracking-wider font-bold">除售后盈利投产</div>
                                 <div className="text-3xl font-black text-amber-400">{metrics.investmentEfficiency.toFixed(2)}</div>
                                 <div className="text-[10px] text-amber-200/50 mt-1">1 ÷ Q列</div>
                              </div>
