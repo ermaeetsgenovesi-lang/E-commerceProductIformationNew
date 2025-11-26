@@ -8,6 +8,7 @@ export interface ProductField {
 }
 
 export interface ParsedSheet {
+  name: string; // The Sheet Name (Brand)
   headers: string[];
   data: ProductData[];
 }
