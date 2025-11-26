@@ -51,6 +51,85 @@ export const parseExcelFile = (file: File): Promise<ParsedSheet[]> => {
 };
 
 /**
+ * Scans an Excel file for a row matching the provided identifiers.
+ * Returns the values and formulas for that row.
+ */
+export const parseExcelAndFindRow = (
+  file: File, 
+  identifiers: string[]
+): Promise<{
+  found: boolean;
+  sheetName?: string;
+  rowData?: Record<string, any>;
+  formulas?: Record<string, string>;
+}> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        if (!data) return resolve({ found: false });
+
+        const workbook = XLSX.read(data, { type: 'binary' });
+        
+        // Iterate through all sheets to find a match
+        for (const sheetName of workbook.SheetNames) {
+          const sheet = workbook.Sheets[sheetName];
+          // Get data as array of arrays (header: 1) to easily access by index
+          const jsonData = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1, defval: '' });
+          
+          if (jsonData.length < 2) continue;
+
+          // Assume first row is headers
+          const headers = jsonData[0].map(h => String(h));
+          
+          // Search for the row
+          for (let i = 1; i < jsonData.length; i++) {
+            const row = jsonData[i];
+            const rowStr = row.join(' ').toLowerCase();
+            
+            // Loose matching: check if any identifier is contained in the row string
+            const match = identifiers.some(id => id && rowStr.includes(id.toLowerCase()));
+            
+            if (match) {
+              // Found match! Extract data and formulas
+              const rowData: Record<string, any> = {};
+              const formulas: Record<string, string> = {};
+
+              headers.forEach((header, colIndex) => {
+                const val = row[colIndex];
+                rowData[header] = val;
+
+                // Get formula from raw sheet cell object if available
+                const cellRef = XLSX.utils.encode_cell({ r: i, c: colIndex });
+                const cell = sheet[cellRef];
+                if (cell && cell.f) {
+                  formulas[header] = cell.f;
+                }
+              });
+
+              resolve({
+                found: true,
+                sheetName,
+                rowData,
+                formulas
+              });
+              return;
+            }
+          }
+        }
+        
+        resolve({ found: false });
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsBinaryString(file);
+  });
+};
+
+/**
  * Heuristics to identify the "Title" column
  */
 export const findTitleKey = (headers: string[]): string => {
@@ -244,12 +323,6 @@ export const parseWeightToGrams = (value: any): number => {
         return num * 500;
     }
     // Default assumes 'g' or raw number is grams if not specified usually in shipping context
-    // But if value is very small (like < 5) and no unit, it might be kg? 
-    // Let's assume raw numbers are Grams unless small logic applies? 
-    // For safety, let's assume input is usually Grams if > 10, else Kg? 
-    // No, standard logistics usually use KG or G. Let's assume Grams if no unit found, as is common in data dumps.
-    // Actually, usually 0.5 means kg. 500 means g. 
-    // Heuristic: if value < 10, treat as KG. If >= 10, treat as G.
     if (!str.includes('g') && !str.includes('斤')) {
         if (num < 10) return num * 1000;
         return num;
