@@ -269,8 +269,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                             <input 
                                 type="number" 
                                 value={calcWeight} 
-                                readOnly
-                                className="w-full p-2 border border-slate-200 rounded-lg font-mono font-bold text-slate-500 bg-slate-100 cursor-not-allowed outline-none" 
+                                onChange={e => setCalcWeight(Number(e.target.value))}
+                                className="w-full p-2 border border-slate-200 rounded-lg font-mono font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none" 
                             />
                         </div>
                          <div className="space-y-1">
