@@ -230,7 +230,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                 if (!value) return null;
                 return (
                     <div key={key} className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                        <dt className="text-xs font-bold text-slate-400 mb-1 uppercase">{key}</dt>
+                        <dt className="text-xs font-bold text-red-600 mb-1 uppercase">{key}</dt>
                         <dd className="text-slate-800 font-medium text-sm whitespace-pre-wrap">{String(value)}</dd>
                     </div>
                 );
@@ -252,11 +252,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                     {/* Primary Inputs */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-500">售卖价 (M列)</label>
+                            <label className="text-xs font-bold text-red-600">售卖价 (M列)</label>
                             <input type="number" value={calcPrice} onChange={e => setCalcPrice(Number(e.target.value))} className="w-full p-2 border border-slate-200 rounded-lg font-mono font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-500">商品成本 (D列)</label>
+                            <label className="text-xs font-bold text-red-600">商品成本 (D列)</label>
                             <input 
                                 type="number" 
                                 value={calcCost} 
@@ -265,7 +265,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-500">商品重量 (g)</label>
+                            <label className="text-xs font-bold text-red-600">商品重量 (g)</label>
                             <input 
                                 type="number" 
                                 value={calcWeight} 
@@ -274,7 +274,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                             />
                         </div>
                          <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-500">预计售后率 (%)</label>
+                            <label className="text-xs font-bold text-red-600">预计售后率 (%)</label>
                             <input type="number" value={returnRate} onChange={e => setReturnRate(Number(e.target.value))} className="w-full p-2 border border-slate-200 rounded-lg font-mono font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                     </div>
@@ -283,7 +283,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                     <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
                          <div className="grid grid-cols-3 gap-3">
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-400">纸箱成本 (F)</label>
+                                <label className="text-xs font-bold text-red-600">纸箱成本 (F)</label>
                                 <input 
                                     type="number" 
                                     value={boxCost} 
@@ -292,7 +292,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-400">操作费 (G)</label>
+                                <label className="text-xs font-bold text-red-600">操作费 (G)</label>
                                 <input 
                                     type="number" 
                                     value={opFee} 
@@ -301,25 +301,25 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-400" title="K列/Target Profit">盈利</label>
+                                <label className="text-xs font-bold text-red-600" title="K列/Target Profit">盈利</label>
                                 <input type="number" value={otherCost} onChange={e => setOtherCost(Number(e.target.value))} className="w-full p-1.5 text-sm border border-slate-200 rounded font-mono text-slate-600" />
                             </div>
                          </div>
                          <div className="border-t border-slate-200 pt-3 space-y-2 text-sm">
                             <div className="flex justify-between">
-                                <span className="text-slate-500">快递成本 (H) <span className="text-xs opacity-70">≤{calcWeight}g</span></span>
+                                <span className="text-red-600 font-bold text-xs">快递成本 (H) <span className="text-xs opacity-70">≤{calcWeight}g</span></span>
                                 <span className="font-mono text-slate-700">¥{metrics.shippingFee.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-slate-500">平台杂费 (I) <span className="text-xs opacity-70">{platformRate}%</span></span>
+                                <span className="text-red-600 font-bold text-xs">平台杂费 (I) <span className="text-xs opacity-70">{platformRate}%</span></span>
                                 <span className="font-mono text-slate-700">¥{metrics.platformFee.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-slate-500">税点 (J) <span className="text-xs opacity-70">{taxRate}%</span></span>
+                                <span className="text-red-600 font-bold text-xs">税点 (J) <span className="text-xs opacity-70">{taxRate}%</span></span>
                                 <span className="font-mono text-slate-700">¥{metrics.taxFee.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between pt-2 border-t border-slate-200 font-bold">
-                                <span className="text-slate-700">综合成本 (L)</span>
+                                <span className="text-red-600 text-sm">综合成本 (L)</span>
                                 <span className="text-red-600">¥{metrics.comprehensiveCost.toFixed(2)}</span>
                             </div>
                          </div>
@@ -334,14 +334,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                     
                     <div className="grid grid-cols-2 gap-4">
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <div className="text-xs text-slate-500 mb-1 font-bold">利润</div>
+                            <div className="text-xs text-red-600 mb-1 font-bold">利润</div>
                             <div className={`text-2xl font-black ${metrics.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 ¥{metrics.profit.toFixed(2)}
                             </div>
                             <div className="text-[10px] text-slate-400 mt-1">售卖价 - 综合成本</div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <div className="text-xs text-slate-500 mb-1 font-bold">未减退款毛利率</div>
+                            <div className="text-xs text-red-600 mb-1 font-bold">未减退款毛利率</div>
                             <div className="text-2xl font-black text-blue-600">
                                 {(metrics.marginPreReturn * 100).toFixed(1)}%
                             </div>
@@ -352,13 +352,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                     <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl p-6 shadow-xl relative overflow-hidden">
                         <div className="relative z-10 grid grid-cols-2 gap-6">
                              <div>
-                                <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">减退款毛利率</div>
+                                <div className="text-xs text-red-400 mb-1 uppercase tracking-wider font-bold">减退款毛利率</div>
                                 <div className="text-3xl font-black text-white">{(metrics.marginPostReturn * 100).toFixed(2)}%</div>
                                 <div className="text-[10px] text-slate-500 mt-1 opacity-70">O列 × (1 - 售后率)</div>
                              </div>
 
                              <div>
-                                <div className="text-xs text-amber-400 mb-1 uppercase tracking-wider font-bold">除售后盈利投产</div>
+                                <div className="text-xs text-red-400 mb-1 uppercase tracking-wider font-bold">除售后盈利投产</div>
                                 <div className="text-3xl font-black text-amber-400">{metrics.investmentEfficiency.toFixed(2)}</div>
                                 <div className="text-[10px] text-amber-200/50 mt-1">1 ÷ Q列</div>
                              </div>
@@ -471,7 +471,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
 
              <div className="flex justify-between items-start gap-6">
                  <div>
-                     <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight tracking-tight">
+                     <h1 className="text-base md:text-lg font-extrabold text-slate-900 leading-tight tracking-tight">
                         {displayTitle}
                      </h1>
                  </div>
