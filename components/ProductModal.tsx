@@ -215,7 +215,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
 
     } catch (error) {
         console.error("AI Error:", error);
-        setAiAnalysis("**分析生成失败，请稍后重试。**");
+        setAiAnalysis("**分析生成失败，请检查网络或 API Key 设置。**");
     } finally {
         setIsAnalyzing(false);
     }
@@ -368,6 +368,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                     <button
                         onClick={handleGenerateAnalysis}
                         disabled={isAnalyzing}
+                        title="点击生成基于当前数据的智能分析报告"
                         className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {isAnalyzing ? (
@@ -378,7 +379,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ data, headers, brand
                         ) : (
                             <>
                                 <Bot className="w-5 h-5" />
-                                生成 AI 投产比分析报告
+                                生成产品投资回报分析报告
                             </>
                         )}
                     </button>
