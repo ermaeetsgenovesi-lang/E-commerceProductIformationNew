@@ -85,7 +85,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ data, headers, onClick
             产品数据: ${productContext}
             
             严格要求：
-            1. 标题结构必须为：【品牌名】+【产品名称】+【产品功效/核心卖点】。
+            1. 标题结构必须为：【品牌名】+【产品名称简称(去除规格参数)】+【产品功效/核心卖点】。
             2. 每个标题长度严格控制在 30 个中文字符左右。
             3. 输出格式：仅列出 5 个标题，每行一个，不要带有序号、引号或其他废话。
             `;
@@ -205,7 +205,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ data, headers, onClick
                 className="flex items-center justify-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 text-[10px] font-bold py-2 rounded-lg transition-colors disabled:opacity-50"
             >
                 {isGenerating && resultTitle === "推荐 SKU 方案" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Box className="w-3 h-3" />}
-                生成SKU
+                生成SKU标题
             </button>
         </div>
       </div>
